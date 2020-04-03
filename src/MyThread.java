@@ -12,7 +12,6 @@ import java.util.Date;
 
 public class MyThread extends Thread {
     private DbxClientV2 client;
-    private InputStream in;
 
     MyThread(DbxClientV2 client) {
         this.client = client;
@@ -20,33 +19,30 @@ public class MyThread extends Thread {
 
     @Override
     public void run() {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        BufferedImage screenshot;
-        ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
-        String fileName;
-        long startTime;
-        long sleepTime;
         try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            BufferedImage screenshot;
+            ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
+            String fileName;
+            long startTime;
+            long sleepTime;
             Robot robot = new Robot();
             Rectangle area = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
             while (true) {
                 startTime = System.currentTimeMillis();
                 screenshot = robot.createScreenCapture(area);
                 ImageIO.write(screenshot, "png", tempOut);
-                in = new ByteArrayInputStream(tempOut.toByteArray());
-                fileName = "/" + formatter.format(new Date()) + ".png";
-                client.files().uploadBuilder(fileName).uploadAndFinish(in);
+                try (InputStream in = new ByteArrayInputStream(tempOut.toByteArray())) {
+                    fileName = "/" + formatter.format(new Date()) + ".png";
+                    client.files().uploadBuilder(fileName).uploadAndFinish(in);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 sleepTime = 10000 - (System.currentTimeMillis() - startTime);
                 sleep(sleepTime);
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="dropbox-core-sdk-3.1.3" level="project" />
+    <orderEntry type="library" name="lombok-plugin-0.28-2019.3" level="project" />
   </component>
 </module>
