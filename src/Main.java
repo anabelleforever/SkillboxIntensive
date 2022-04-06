@@ -15,11 +15,9 @@ public class Main {
         try {
             MyThread thread1 = new MyThread(client);
             MyThread thread2 = new MyThread(client);
-
             Thread.sleep(1000);
             thread1.start();
             Thread.sleep(5000);
-
             thread2.start();
 
             System.out.println("Кофе-машина" + System.lineSeparator() +
